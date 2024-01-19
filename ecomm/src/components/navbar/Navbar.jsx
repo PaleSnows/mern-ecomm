@@ -1,19 +1,23 @@
-import React, { useState } from "react";
+import React, { useContext, useRef, useState } from "react";
 import logo from "../Assets/logo.png";
 import cart_icon from "../Assets/cart_icon.png";
 import { Link } from "react-router-dom";
+import { ShopContext } from "../../context/ShopContext";
 
 const Navbar = () => {
-  //21:30
 
   const [menu, setMenu] = useState("shop");
+  const{getTotalCartItems} = useContext(ShopContext)
+
+
   return (
-    <div className="flex justify-around p-9 shadow-md">
+    <div className="lg:flex justify-around p-9 shadow-md  ">
       <div className="flex items-center gap-1">
         <img src={logo} alt="" />
         <p className="text-[#171717] text-3xl font-bold">SHOPPER</p>
       </div>
-      <ul className="flex items-center gap-[30px] text-[#626262] text-md">
+      
+      <ul  className="flex items-center gap-[30px] text-[#626262] text-md">
         <li
           className="flex flex-col justify-center gap-3 cursor-pointer"
           onClick={() => setMenu("shop")}
@@ -67,7 +71,7 @@ const Navbar = () => {
           <img src={cart_icon} alt="" />
         </Link>
         <div className="flex items-center mt-[-52px] ml-[-72px] rounded-xl px-[8px] bg-red-500 text-white">
-          0
+          {getTotalCartItems()}
         </div>
       </div>
     </div>
