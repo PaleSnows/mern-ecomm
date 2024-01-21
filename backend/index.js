@@ -11,8 +11,10 @@ import path from "path";
 import express from "express";
 import dotenv from "dotenv";
 import { Product } from "./models/Product.model.js";
+import jwt from "jsonwebtoken";
 import bodyParser from "body-parser";
-import cors from 'cors'
+import cors from "cors";
+import { User } from "./models/USer.model.js";
 
 dotenv.config({
   path: "./.env",
@@ -30,12 +32,13 @@ app.use(
   })
 );
 
-app.use(cors(
-  {origin :`${process.env.CORS_POINT}`,
-  
-  methods:["GET","POST"],
-},
-))
+app.use(
+  cors({
+    origin: `${process.env.CORS_POINT}`,
+
+    methods: ["GET", "POST"],
+  })
+);
 
 app.get("/", (req, res) => {
   res.send("Express app running");
@@ -65,15 +68,14 @@ app.post("/upload", upload.single("product"), (req, res) => {
   });
 });
 
-
 //creating a product in db
 app.post("/addproduct", async (req, res) => {
   const { id, name, image, old_price, new_price, category, date } = req.body;
-  
+
   // let products = await Product.find({})
   // if(products.length>0){
   //   let last_product_array = products.slice(-1)
-  //   let last_product = last_product_array[0] 
+  //   let last_product = last_product_array[0]
   //  let id=last_product.id+1
   // }else{
   //   id=1
@@ -97,25 +99,84 @@ app.post("/addproduct", async (req, res) => {
 });
 
 //Creating api for deleting product
-app.post('/removeproduct',async(req,res)=>{
-  const{id} = req.body
+app.post("/removeproduct", async (req, res) => {
+  const { id } = req.body;
   await Product.findOneAndDelete({
-    id
-  })
-  console.log('removed');
+    id,
+  });
+  console.log("removed");
   res.json({
-    success:true,
-    name:req.body.name
-  })
-})
+    success: true,
+    name: req.body.name,
+  });
+});
 
 //Creating api for getting all products
-app.get('/allproducts',async(req,res)=>{
+app.get("/allproducts", async (req, res) => {
   // const{} = req.body
-  let products = await Product.find({})
+  let products = await Product.find({});
   console.log("All Products Fetched");
-  res.send(products)
-})
+  res.send(products);
+});
+
+// Creating end point for registeriung user using user schema
+app.post("/signup", async (req, res) => {
+  const { email, name, password, cartData } = req.body;
+  let check = await User.findOne({ email: email });
+  if (check) {
+    return res.status(400).json({
+      success: false,
+      errors: "Existing user found with same email id",
+    });
+  }
+  let cart = {};
+  for (let i = 0; i < 300; i++) {
+    cart[i] = 0;
+  }
+  const user = User.create({
+    name,
+    email,
+    password,
+    cartData: cart,
+  });
+  // await user.save();
+
+  //for password part
+  const data = {
+    user: { id: user.id },
+  };
+  //hashing user password
+  const token = jwt.sign(data, "secret_ecom");
+  res.json({
+    success: true,
+    token,
+  });
+});
+
+//creating endpoint for user login
+app.post("/login", async (req, res) => {
+  const { name, email, password } = req.body;
+  let user = await User.findOne({ email: email });
+  if (user) {
+    const passCompare = password === user.password;
+    if (passCompare) {
+      const data = {
+        user: {
+          id: user.id,
+        },
+      };
+      const token = jwt.sign(data, "secret_ecom");
+      res.json({
+        success: true,
+        token,
+      });
+    } else {
+      res.json({ success:false, errors: "Wrong password" });
+    }
+  } else {
+    res.json({ success: false, errors: "Wrong email id" });
+  }
+});
 
 app.listen(process.env.PORT, (error) => {
   if (!error) {
