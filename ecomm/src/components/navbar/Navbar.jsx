@@ -5,10 +5,8 @@ import { Link } from "react-router-dom";
 import { ShopContext } from "../../context/ShopContext";
 
 const Navbar = () => {
-
   const [menu, setMenu] = useState("shop");
-  const{getTotalCartItems} = useContext(ShopContext)
-
+  const { getTotalCartItems } = useContext(ShopContext);
 
   return (
     <div className="lg:flex justify-around p-9 shadow-md  ">
@@ -16,8 +14,8 @@ const Navbar = () => {
         <img src={logo} alt="" />
         <p className="text-[#171717] text-3xl font-bold">SHOPPER</p>
       </div>
-      
-      <ul  className="flex items-center gap-[30px] text-[#626262] text-md">
+
+      <ul className="flex items-center gap-[30px] text-[#626262] text-md">
         <li
           className="flex flex-col justify-center gap-3 cursor-pointer"
           onClick={() => setMenu("shop")}
@@ -64,9 +62,25 @@ const Navbar = () => {
         </li>
       </ul>
       <div className="flex items-center gap-[45px]">
-        <Link to="/login">
-          <button className="w-[165px] h-[60px] outline-none  rounded-3xl border border-green-300 hover:bg-green-400">Login</button>
-        </Link>
+
+        {localStorage.getItem("auth-token") ? (
+          <button
+          className="w-[165px] h-[60px] outline-none  rounded-3xl border border-green-300 hover:bg-green-400"
+            onClick={() => {
+              localStorage.removeItem("auth-token");
+              window.location.replace("/");
+            }}
+          >
+            Logout
+          </button>
+        ) : (
+          <Link to="/login">
+            <button className="w-[165px] h-[60px] outline-none  rounded-3xl border border-green-300 hover:bg-green-400">
+              Login
+            </button>
+          </Link>
+        )}
+
         <Link to="/cart">
           <img src={cart_icon} alt="" />
         </Link>
